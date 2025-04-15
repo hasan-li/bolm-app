@@ -5,37 +5,33 @@ import { COLORS } from '../../constants/colors';
 import { TYPOGRAPHY } from '../../constants/typography';
 
 export default function AppLayout() {
-    // Auth logic should be moved to the root layout (src/app/_layout.tsx)
-    // or handled via a context provider higher up.
-    // This layout assumes the user is authenticated and focuses on the app's stack.
+    // Auth logic should ideally live in the root layout (src/app/_layout.tsx)
+    // This layout defines the stack navigator for the authenticated part of the app.
 
     return (
         <Stack
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: COLORS.background, // Use grey background for header
+                    backgroundColor: COLORS.background, // Use light grey background
                 },
-                headerTintColor: COLORS.textPrimary, // Dark text for title and back button
+                headerTintColor: COLORS.primaryAccent, // Accent color for back arrow etc.
                 headerTitleStyle: {
-                    // Use a suitable typography style for titles
+                    // Default title style (can be overridden per screen)
                     fontSize: TYPOGRAPHY.headline.fontSize,
                     fontWeight: TYPOGRAPHY.headline.fontWeight,
                     color: COLORS.textPrimary,
                 },
-                headerShadowVisible: false, // Key for the flat, modern look
-                headerBackTitleVisible: false, // Cleaner look without "Back" text
-                // You can add more default options here
+                headerShadowVisible: false, // Clean, flat look
+                headerBackButtonDisplayMode: "minimal", // Hide text next to back arrow on iOS
             }}
         >
-            {/* Define screen-specific options directly in each screen file */}
-            {/* using <Stack.Screen options={{...}} /> */}
-            {/* Example structure (no need to list them if using file-based routing options): */}
-            {/* <Stack.Screen name="index" options={{ title: 'Groups' }} /> */}
-            {/* <Stack.Screen name="create-group" options={{ title: 'Create Group', presentation: 'modal' }} /> */}
+            {/* Screens are defined by files in this directory */}
+            {/* Specific options like headerLargeTitle are set in individual screen files */}
+            <Stack.Screen name="index" options={{ headerShown: true }} />
+            {/* Keep other screens default or customize in their files */}
+            {/* <Stack.Screen name="create-group" /> */}
             {/* <Stack.Screen name="group/[id]" /> */}
-            {/* <Stack.Screen name="add-expense" options={{ title: 'Add Expense', presentation: 'modal' }} /> */}
+            {/* <Stack.Screen name="add-expense" /> */}
         </Stack>
     );
 }
-
-// No need for the StyleSheet here anymore as Stack handles the container

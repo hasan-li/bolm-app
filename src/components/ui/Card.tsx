@@ -1,15 +1,16 @@
 // src/components/ui/Card.tsx
-// Make it essentially a View with optional padding, no default styling
 import React from 'react';
-import { View, StyleSheet, ViewProps } from 'react-native';
+import { View, StyleSheet, ViewProps, Platform } from 'react-native';
 import { COLORS } from '../../constants/colors';
 
 interface CardProps extends ViewProps {
     padded?: boolean;
+    noMargin?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
-                                              padded = false, // Default to no padding
+                                              padded = true, // Default to padded
+                                              noMargin = false,
                                               style,
                                               children,
                                               ...rest
@@ -19,6 +20,7 @@ export const Card: React.FC<CardProps> = ({
             style={[
                 styles.card,
                 padded && styles.padded,
+                noMargin && styles.noMargin,
                 style,
             ]}
             {...rest}
@@ -30,10 +32,26 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
     card: {
-        // No default background, border, or margin.
-        // Let the screen/component using it define these if needed.
+        backgroundColor: COLORS.card, // White background
+        borderRadius: 10, // Consistent rounded corners
+        marginBottom: 16, // Default spacing below card
+        // Subtle shadow for depth
+        ...Platform.select({
+            ios: {
+                shadowColor: 'rgba(0,0,0,0.6)', // Slightly darker shadow color
+                shadowOffset: { width: 0, height: 2 }, // Slightly more offset
+                shadowOpacity: 0.1, // Lower opacity
+                shadowRadius: 4, // Larger radius for softer shadow
+            },
+            android: {
+                elevation: 2, // Subtle elevation
+            },
+        }),
     },
     padded: {
         padding: 16,
+    },
+    noMargin: {
+        marginBottom: 0,
     },
 });

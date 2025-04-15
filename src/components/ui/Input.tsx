@@ -1,5 +1,5 @@
 // src/components/ui/Input.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     TextInput,
@@ -24,22 +24,39 @@ export const Input: React.FC<InputProps> = ({
                                                 error,
                                                 style,
                                                 containerStyle,
+                                                onFocus,
+                                                onBlur,
                                                 ...rest
                                             }) => {
+    const [isFocused, setIsFocused] = useState(false);
+
+    const handleFocus = (e: any) => {
+        setIsFocused(true);
+        onFocus?.(e);
+    };
+
+    const handleBlur = (e: any) => {
+        setIsFocused(false);
+        onBlur?.(e);
+    };
+
     return (
         <View style={[styles.container, containerStyle]}>
             {label && (
-                <Text variant="caption1" color={COLORS.textSecondary} style={styles.label}>
-                    {label.toUpperCase()} {/* Uppercase label */}
+                <Text variant="footnote" color={COLORS.textSecondary} style={styles.label}>
+                    {label}
                 </Text>
             )}
             <TextInput
                 style={[
                     styles.input,
+                    isFocused && styles.inputFocused,
                     error ? styles.inputError : null,
                     style,
                 ]}
                 placeholderTextColor={COLORS.placeholder}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
                 {...rest}
             />
             {error && (
@@ -53,27 +70,53 @@ export const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 24, // More spacing
+        marginBottom: 20,
     },
     label: {
-        marginBottom: 8,
-        letterSpacing: 0.5, // Add letter spacing to label
+        marginBottom: 6,
+        paddingHorizontal: 4,
     },
     input: {
-        height: 40, // Slightly reduced height
-        paddingHorizontal: 0, // No horizontal padding needed for underline style
-        paddingBottom: 8, // Padding below text
-        borderBottomWidth: 1, // Use bottom border only
-        borderBottomColor: COLORS.border,
-        backgroundColor: COLORS.transparent, // Transparent background
+        height: Platform.OS === 'ios' ? 44 : 48,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        borderRadius: 8, // Consistent rounding
+        backgroundColor: COLORS.inputBackground,
         color: COLORS.textPrimary,
         fontSize: TYPOGRAPHY.body.fontSize,
-        borderRadius: 0, // Sharp corners
+        // Subtle shadow for depth
+        ...Platform.select({
+            ios: {
+                shadowColor: 'rgba(0,0,0,0.1)',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.8,
+                shadowRadius: 1,
+            },
+            android: {
+                elevation: 1,
+            },
+        }),
+    },
+    inputFocused: {
+        borderColor: COLORS.primaryAccent, // Blue border on focus
+        // Optional: Slightly stronger shadow on focus
+        ...Platform.select({
+            ios: {
+                shadowColor: COLORS.primaryAccent,
+                shadowOpacity: 0.2,
+                shadowRadius: 3,
+            },
+            android: {
+                elevation: 3,
+            },
+        }),
     },
     inputError: {
-        borderBottomColor: COLORS.error,
+        borderColor: COLORS.error, // Red border on error
     },
     errorText: {
-        marginTop: 6,
+        marginTop: 4,
+        paddingHorizontal: 4,
     },
 });

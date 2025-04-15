@@ -7,14 +7,16 @@ import {
     ViewStyle,
     StyleProp,
     TextStyle,
+    Platform,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
-import { Text } from './Text'; // Use your custom Text component
+import { Text } from './Text';
+import { TYPOGRAPHY, TextVariant } from '../../constants/typography';
 
 interface ButtonProps {
     title: string;
     onPress: () => void;
-    variant?: 'primary' | 'secondary' | 'destructive' | 'text'; // Added 'text' variant
+    variant?: 'primary' | 'secondary' | 'destructive' | 'text' | 'pill'; // Added 'pill'
     isLoading?: boolean;
     disabled?: boolean;
     style?: StyleProp<ViewStyle>;
@@ -31,15 +33,21 @@ export const Button: React.FC<ButtonProps> = ({
                                                   textStyle,
                                               }) => {
     const isDisabled = isLoading || disabled;
+    const isPill = variant === 'pill';
 
     const getTextColor = () => {
-        if (isDisabled) return COLORS.disabled;
+        if (isDisabled) {
+            // For pill buttons, disabled text is lighter on a disabled background
+            // For text buttons, disabled text is just the disabled color
+            return isPill ? COLORS.textTertiary : COLORS.disabled;
+        }
         switch (variant) {
             case 'primary':
-                return COLORS.primaryAccent;
-            case 'secondary':
+            case 'secondary': // iOS often uses blue for secondary text buttons too
             case 'text':
-                return COLORS.textSecondary;
+                return COLORS.primaryAccent;
+            case 'pill':
+                return COLORS.card; // White text on pill
             case 'destructive':
                 return COLORS.error;
             default:
@@ -47,37 +55,52 @@ export const Button: React.FC<ButtonProps> = ({
         }
     };
 
-    const getTextVariant = (): keyof typeof TYPOGRAPHY => {
+    const getTextVariant = (): TextVariant => {
+        // Use specific button typography variants based on TYPOGRAPHY constants
         switch (variant) {
             case 'primary':
-                return 'buttonPrimary';
+            case 'pill': // Pill uses primary styling (semibold)
+                return isDisabled ? 'buttonDisabled' : 'buttonPrimary';
             case 'destructive':
-                return 'buttonDestructive';
+                return isDisabled ? 'buttonDisabled' : 'buttonDestructive'; // Need a disabled destructive style?
             case 'secondary':
             case 'text':
             default:
-                return 'buttonSecondary';
+                return isDisabled ? 'buttonDisabled' : 'buttonSecondary'; // Regular weight
         }
+    };
+
+    const getButtonBackground = () => {
+        if (isPill) {
+            return isDisabled ? COLORS.disabledBackground : COLORS.primaryAccent;
+        }
+        return COLORS.transparent; // Text buttons are transparent
     };
 
     return (
         <TouchableOpacity
             style={[
                 styles.buttonBase,
-                isDisabled && styles.disabled,
+                isPill && styles.pillShape,
+                { backgroundColor: getButtonBackground() },
+                // Opacity is handled via text color for text buttons, background for pills
+                isDisabled && !isPill && styles.disabledOpacity,
                 style,
             ]}
             onPress={onPress}
             disabled={isDisabled}
-            activeOpacity={0.6}
+            activeOpacity={0.6} // Standard dimming on press
         >
             {isLoading ? (
                 <ActivityIndicator size="small" color={getTextColor()} />
             ) : (
                 <Text
+                    // Use the determined variant (handles disabled style via TYPOGRAPHY)
                     variant={getTextVariant()}
+                    // Override color specifically for non-pill disabled state if needed,
+                    // otherwise rely on TYPOGRAPHY variant color
                     style={[
-                        { color: getTextColor() }, // Color is set here based on variant/state
+                        { color: getTextColor() }, // Ensure correct color is applied
                         textStyle,
                     ]}
                 >
@@ -91,12 +114,17 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
     buttonBase: {
         paddingVertical: 10,
-        paddingHorizontal: 12, // Slightly less padding maybe
+        paddingHorizontal: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        // No background or border
+        minHeight: Platform.OS === 'ios' ? 44 : 36,
+        borderRadius: 8, // Default subtle rounding
     },
-    disabled: {
+    pillShape: {
+        borderRadius: 22, // Half of minHeight for perfect pill
+        paddingHorizontal: 24, // More padding for pills
+    },
+    disabledOpacity: { // Only for non-pill disabled buttons
         opacity: 0.4,
     },
 });

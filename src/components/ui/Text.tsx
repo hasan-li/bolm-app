@@ -5,8 +5,8 @@ import { COLORS } from '../../constants/colors';
 import { TYPOGRAPHY, TextVariant } from '../../constants/typography'; // Import TextVariant type
 
 interface CustomTextProps extends TextProps {
-    variant?: TextVariant; // Use the imported type
-    color?: string;
+    variant?: TextVariant;
+    color?: string; // Allow overriding color
     center?: boolean;
 }
 
@@ -19,18 +19,16 @@ export const Text: React.FC<CustomTextProps> = ({
                                                     ...rest
                                                 }) => {
     const baseStyle = TYPOGRAPHY[variant] || TYPOGRAPHY.body;
-
-    // Determine the final color: Use provided color > variant default > fallback
-    // Note: Button colors are primarily set in the Button component itself now
+    // Use color from prop, then from TYPOGRAPHY definition, then fallback
     const finalColor = color ?? baseStyle.color ?? COLORS.textPrimary;
 
     return (
         <RNText
             style={[
-                baseStyle,
-                { color: finalColor },
+                baseStyle, // Apply variant styles (includes font, size, weight, and default color)
+                { color: finalColor }, // Apply the determined color
                 center && styles.center,
-                style,
+                style, // Apply custom styles last
             ]}
             {...rest}
         >
